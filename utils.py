@@ -65,7 +65,7 @@ def get_loader(dataset, root, mode, n_sample, num_for_seen, batch_size, num_work
     assert dataset in ['flower', 'vggface', 'animal', 'cwt_gearbox']
 
     transform_list = [transforms.ToTensor(),
-                      transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]
+                      transforms.Normalize(mean=0.5, std=0.5)]
     if center_crop:
         transform_list = [transforms.CenterCrop((height, width))] + \
                          transform_list if crop else transform_list

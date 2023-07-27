@@ -11,6 +11,8 @@ from tensorboardX import SummaryWriter
 from trainer import Trainer
 from utils import make_result_folders, write_image, write_loss, get_config, get_loaders
 
+import datetime
+
 parser = argparse.ArgumentParser()
 parser.add_argument('--conf', type=str)
 parser.add_argument('--output_dir', type=str,)
@@ -31,6 +33,7 @@ max_iter = config['max_iter']
 train_dataloader, test_dataloader = get_loaders(config)
 
 if __name__ == '__main__':
+    print(datetime.datetime.now())
 
     SEED = 0
     random.seed(SEED)
@@ -43,7 +46,7 @@ if __name__ == '__main__':
     trainer = Trainer(config)
     trainer.cuda()
 
-    imgs_test, _ = iter(test_dataloader).next()
+    imgs_test, _ = next(iter(test_dataloader))
     iterations = trainer.resume(checkpoint_directory) if args.resume else 0
     while True:
         with torch.autograd.set_detect_anomaly(True):

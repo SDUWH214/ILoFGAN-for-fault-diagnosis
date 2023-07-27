@@ -31,7 +31,7 @@ class LoFGAN_MHA1(nn.Module):
             feat_real, _, _ = self.dis(xs)
             feat_fake, logit_adv_fake, logit_c_fake = self.dis(fake_x)
             loss_adv_gen = torch.mean(-logit_adv_fake)
-            loss_cls_gen = F.cross_entropy(logit_c_fake, y.squeeze())
+            loss_cls_gen = F.cross_entropy(logit_c_fake, y.squeeze().long())
 
             loss_recon = loss_recon * self.w_recon      # Local Reconstruction Loss
             loss_adv_gen = loss_adv_gen * self.w_adv_g  # gen_Adversarial Loss
@@ -54,8 +54,8 @@ class LoFGAN_MHA1(nn.Module):
             loss_adv_dis_real.backward(retain_graph=True)
 
             #这里y就是label,logit_c_real[12,8]，其中12=batch_size*3，鉴别器的鉴别类有num_classes = 8
-            y_extend = y.repeat(1, self.n_sample).view(-1)     #[0,0,0,6,6,6,1,1,1,3,3,3]
-            index = torch.LongTensor(range(y_extend.size(0))).cuda()    #[0,1,2,3,4,5,6,7,8,9,10,11]
+            y_extend = y.repeat(1, self.n_sample).type(torch.long).view(-1)     #[0,0,0,6,6,6,1,1,1,3,3,3]
+            index = torch.LongTensor(range(y_extend.size(0))).type(torch.long).cuda()    #[0,1,2,3,4,5,6,7,8,9,10,11]
             logit_c_real_forgp = logit_c_real[index, y_extend].unsqueeze(1)     #理应得到[12,1]
             loss_reg_dis = self.calc_grad2(logit_c_real_forgp, xs)
             loss_reg_dis = loss_reg_dis * self.w_gp                 # dis_regression Loss(使用了GP)
@@ -111,7 +111,7 @@ class Discriminator(nn.Module):
         n_class = config['num_classes']
         n_res_blks = config['n_res_blks']
 
-        cnn_f = [Conv2dBlock(3, nf, 5, 1, 2,
+        cnn_f = [Conv2dBlock(1, nf, 5, 1, 2,
                              pad_type='reflect',
                              norm='sn',
                              activation='none')]
@@ -185,7 +185,7 @@ class Encoder(nn.Module):
     def __init__(self):
         super(Encoder, self).__init__()
 
-        model = [Conv2dBlock(3, 16, 5, 1, 2,        #[4*3,3,64,64]->[4*3,16,64,64]
+        model = [Conv2dBlock(1, 16, 5, 1, 2,        #[4*3,3,64,64]->[4*3,16,64,64]
                              norm='bn',
                              activation='lrelu',
                              pad_type='reflect'),
@@ -248,7 +248,7 @@ class Decoder(nn.Module):
                              norm='bn',
                              activation='lrelu',
                              pad_type='reflect'),
-                 Conv2dBlock(16, 3, 5, 1, 2,     #[4,3,64,64]
+                 Conv2dBlock(16, 1, 5, 1, 2,     #[4,3,64,64]
                              norm='none',
                              activation='tanh',
                              pad_type='reflect')]
