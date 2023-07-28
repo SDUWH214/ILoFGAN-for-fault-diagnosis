@@ -51,4 +51,4 @@ if __name__ == '__main__':
             imgs = torch.cat([transform(img).unsqueeze(0) for img in imgs], dim=0).unsqueeze(0).cuda()
             fake_x = trainer.generate(imgs)
             output = unloader(fake_x[0].cpu())
-            output.save(os.path.join('./results/sdu/sample', str(cls+1), '{}.png'.format(str(i).zfill(3))), 'png')
+            output.save(os.path.join('./results/sdu/sample', str(cls+1), '{}.png'.format(i)), 'png')
